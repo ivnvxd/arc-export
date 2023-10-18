@@ -1,3 +1,19 @@
+# General
+.DS_Store
+.Trashes
+.Spotlight-V100
+Thumbs.db
+$RECYCLE.BIN/
+
+# VsCode
+.vscode
+
+# Idea
+.idea
+
+# Project
+poetry.lock
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
