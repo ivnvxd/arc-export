@@ -26,6 +26,10 @@ python main.py
 python3 main.py
 ```
 
+### Alternative converter
+
+If you prefer an online version, you can use the Web-based utility made by [oliviacodes](https://oliviacodes.dev/) available at [arc-export.oliviacodes.dev](https://arc-export.oliviacodes.dev/)
+
 ### Troubleshooting
 
 If you encounter any problems, manually copy the `StorableSidebar.json` file from the `~/Library/Application Support/Arc/` directory to the project's directory and run the script again.
