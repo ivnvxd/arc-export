@@ -16,6 +16,12 @@ This addresses the lack of a pinned tabs export feature in Arc Browser.
 1. Clone the repository: `git clone git@github.com:ivnvxd/arc-export.git`
 2. Navigate to the project folder: `cd arc-export`
 
+or download using `curl`:
+
+```sh
+curl -o main.py https://raw.githubusercontent.com/ivnvxd/arc-export/main/main.py
+```
+
 ## Usage
 
 Run the `main.py` script from the command line:
