@@ -18,30 +18,38 @@ def read_json() -> dict:
     library_path: str = os.path.join(
         os.path.expanduser("~/Library/Application Support/Arc/"), filename
     )
+    data: dict = {}
 
     try:
         with open(filename, "r") as f:
             print(f"> Found {filename} in current directory.")
-            data: dict = json.load(f)
+            data = json.load(f)
 
     except FileNotFoundError:
         try:
             with open(library_path, "r") as f:
                 print(f"> Found {filename} in Library directory.")
-                data: dict = json.load(f)
+                data = json.load(f)
 
         except FileNotFoundError:
             print(
                 '> File not found. Look for the "StorableSidebar.json" '
                 'file within the "~/Library/Application Support/Arc/" folder.'
             )
+            raise
 
     return data
 
 
 def convert_json_to_html(json_data: dict) -> str:
-    spaces: dict = get_spaces(json_data["sidebar"]["containers"][1]["spaces"])
-    items: list = json_data["sidebar"]["containers"][1]["items"]
+    containers: list = json_data["sidebar"]["containers"]
+    target: int = 0
+    for i in range(len(containers)):
+        if "global" in containers[i]:
+            target = i + 1
+
+    spaces: dict = get_spaces(json_data["sidebar"]["containers"][target]["spaces"])
+    items: list = json_data["sidebar"]["containers"][target]["items"]
 
     bookmarks: dict = convert_to_bookmarks(spaces, items)
     html_content: str = convert_bookmarks_to_html(bookmarks)
@@ -103,7 +111,8 @@ def convert_to_bookmarks(spaces: dict, items: list) -> dict:
                 if "data" in item and "tab" in item["data"]:
                     children.append(
                         {
-                            "title": item.get("title", None) or item["data"]["tab"].get("savedTitle", ""),
+                            "title": item.get("title", None)
+                            or item["data"]["tab"].get("savedTitle", ""),
                             "type": "bookmark",
                             "url": item["data"]["tab"].get("savedURL", ""),
                         }
