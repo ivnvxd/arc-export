@@ -103,7 +103,7 @@ def convert_to_bookmarks(spaces: dict, items: list) -> dict:
                 if "data" in item and "tab" in item["data"]:
                     children.append(
                         {
-                            "title": item["data"]["tab"].get("savedTitle", ""),
+                            "title": item.get("title", None) or item["data"]["tab"].get("savedTitle", ""),
                             "type": "bookmark",
                             "url": item["data"]["tab"].get("savedURL", ""),
                         }
