@@ -77,17 +77,17 @@ def get_spaces(spaces: list) -> dict:
 
             for i in range(len(containers)):
                 if "pinned" in containers[i]:
-                    spaces_names["pinned"][containers[i + 1]]: str = title
+                    spaces_names["pinned"][str(containers[i + 1])]: str = title
                 elif "unpinned" in containers[i]:
-                    spaces_names["unpinned"][containers[i + 1]]: str = title
+                    spaces_names["unpinned"][str(containers[i + 1])]: str = title
 
             # containers: list = space["containerIDs"]
 
             # for i in range(len(containers)):
             #     if containers[i] == "pinned":
-            #         spaces_names["pinned"][containers[i + 1]]: str = title
+            #         spaces_names["pinned"][str(containers[i + 1])]: str = title
             #     elif containers[i] == "unpinned":
-            #         spaces_names["unpinned"][containers[i + 1]]: str = title
+            #         spaces_names["unpinned"][str(containers[i + 1])]: str = title
 
             spaces_count += 1
 
