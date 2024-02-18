@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+from pathlib import Path
 
 
 def main() -> None:
@@ -14,39 +15,33 @@ def main() -> None:
 def read_json() -> dict:
     print("Reading JSON...")
 
-    filename: str = "StorableSidebar.json"
-    library_path: str = os.path.join(
-        os.path.expanduser("~/Library/Application Support/Arc/"), filename
-    )
+    filename: Path = Path("StorableSidebar.json")
+    library_path: Path = Path(os.path.expanduser("~/Library/Application Support/Arc/")).joinpath(filename)
     data: dict = {}
 
-    try:
-        with open(filename, "r") as f:
+    if filename.exists():
+        with filename.open("r", encoding="utf-8") as f:
             print(f"> Found {filename} in current directory.")
             data = json.load(f)
 
-    except FileNotFoundError:
-        try:
-            with open(library_path, "r") as f:
-                print(f"> Found {filename} in Library directory.")
-                data = json.load(f)
+    elif library_path.exists():
+        with library_path.open("r", encoding="utf-8") as f:
+            print(f"> Found {filename} in Library directory.")
+            data = json.load(f)
 
-        except FileNotFoundError:
-            print(
-                '> File not found. Look for the "StorableSidebar.json" '
-                'file within the "~/Library/Application Support/Arc/" folder.'
-            )
-            raise
+    else:
+        print(
+            '> File not found. Look for the "StorableSidebar.json" '
+            'file within the "~/Library/Application Support/Arc/" folder.'
+        )
+        raise FileNotFoundError
 
     return data
 
 
 def convert_json_to_html(json_data: dict) -> str:
     containers: list = json_data["sidebar"]["containers"]
-    target: int = 0
-    for i in range(len(containers)):
-        if "global" in containers[i]:
-            target = i + 1
+    target: int = sum([1 for i in containers if "global" in i])
 
     spaces: dict = get_spaces(json_data["sidebar"]["containers"][target]["spaces"])
     items: list = json_data["sidebar"]["containers"][target]["items"]
@@ -174,9 +169,9 @@ def write_html(html_content: str) -> None:
     print("Writing HTML...")
 
     current_date: str = datetime.datetime.now().strftime("%Y_%m_%d")
-    output_file: str = "arc_bookmarks_" + current_date + ".html"
+    output_file: Path = Path("arc_bookmarks_" + current_date).with_suffix(".html")
 
-    with open(output_file, "w") as f:
+    with output_file.open("w", encoding="utf-8") as f:
         f.write(html_content)
 
     print(f"> HTML written to {output_file}.")
