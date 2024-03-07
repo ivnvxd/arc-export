@@ -27,9 +27,10 @@ curl -o main.py https://raw.githubusercontent.com/ivnvxd/arc-export/main/main.py
 Run the `main.py` script from the command line:
 
 ```sh
-python main.py
-# or
 python3 main.py
+
+# or if there is an error:
+python main.py
 ```
 
 ### Troubleshooting
@@ -47,7 +48,13 @@ If you encounter any problems, manually copy the `StorableSidebar.json` file fro
 
 Contributions are very welcome. Please submit a pull request or create an issue.
 
-Do not forget to give the project a star if you like it! :star:
+## Support
+
+Thank you for using this project! If you find it helpful and would like to support my work, kindly consider buying me a coffee. Your support is greatly appreciated!
+
+<a href="https://www.buymeacoffee.com/ivnvxd" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+And do not forget to give the project a star if you like it! :star:
 
 ## License
 
