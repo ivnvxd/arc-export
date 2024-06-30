@@ -17,16 +17,25 @@ def read_json() -> dict:
 
     filename: Path = Path("StorableSidebar.json")
     if os.name == "nt":
-        arc_root_parent_path: Path = Path(os.path.expanduser(r"~\AppData\Local\Packages"))
-        arc_root_paths: list[Path] = [f for f in arc_root_parent_path.glob("*")
-                                      if f.name.startswith("TheBrowserCompany.Arc")]
+        arc_root_parent_path: Path = Path(
+            os.path.expanduser(r"~\AppData\Local\Packages")
+        )
+        arc_root_paths: list[Path] = [
+            f
+            for f in arc_root_parent_path.glob("*")
+            if f.name.startswith("TheBrowserCompany.Arc")
+        ]
         if len(arc_root_paths) != 1:
             raise FileNotFoundError
 
-        library_path: Path = Path(arc_root_paths[0].joinpath(r"LocalCache\Local\Arc")).joinpath(filename)
+        library_path: Path = Path(
+            arc_root_paths[0].joinpath(r"LocalCache\Local\Arc")
+        ).joinpath(filename)
 
     else:
-        library_path: Path = Path(os.path.expanduser("~/Library/Application Support/Arc/")).joinpath(filename)
+        library_path: Path = Path(
+            os.path.expanduser("~/Library/Application Support/Arc/")
+        ).joinpath(filename)
 
     data: dict = {}
 
