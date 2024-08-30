@@ -5,19 +5,11 @@ import os
 from pathlib import Path
 
 
-def print(*args, force: bool = False, **kwargs):
-    if not is_silent or force:
-        __builtins__.print(*args, **kwargs)
-
 def main() -> Path:
-    global is_silent
-
     parser = argparse.ArgumentParser(description="Reads Arc Browser JSON data, converts it to HTML, and writes the output to a specified file.")
     parser.add_argument('-o', '--output', type=Path, required=False, help='Specify the output file path')
 
     args = parser.parse_args()
-
-    is_silent = args.silent
     args.output if args.output else None
 
     data: dict = read_json()
