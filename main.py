@@ -1,13 +1,28 @@
+import argparse
 import datetime
 import json
 import os
 from pathlib import Path
 
 
-def main() -> None:
+def print(*args, force: bool = False, **kwargs):
+    if not is_silent or force:
+        __builtins__.print(*args, **kwargs)
+
+def main() -> Path:
+    global is_silent
+
+    parser = argparse.ArgumentParser(description="Reads Arc Browser JSON data, converts it to HTML, and writes the output to a specified file.")
+    parser.add_argument('-o', '--output', type=Path, required=False, help='Specify the output file path')
+
+    args = parser.parse_args()
+
+    is_silent = args.silent
+    args.output if args.output else None
+
     data: dict = read_json()
     html: str = convert_json_to_html(data)
-    write_html(html)
+    write_html(html, args.output)
 
     print("Done!")
 
@@ -185,11 +200,14 @@ def convert_bookmarks_to_html(bookmarks: dict) -> str:
     return html_str
 
 
-def write_html(html_content: str) -> None:
+def write_html(html_content: str, output: Path = None) -> None:
     print("Writing HTML...")
 
-    current_date: str = datetime.datetime.now().strftime("%Y_%m_%d")
-    output_file: Path = Path("arc_bookmarks_" + current_date).with_suffix(".html")
+    if output is not None:
+        output_file: Path = output
+    else:
+        current_date: str = datetime.datetime.now().strftime("%Y_%m_%d")
+        output_file: Path = Path("arc_bookmarks_" + current_date).with_suffix(".html")
 
     with output_file.open("w", encoding="utf-8") as f:
         f.write(html_content)
