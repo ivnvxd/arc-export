@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 
-def main() -> Path:
+def main() -> None:
     parser = argparse.ArgumentParser(description="Reads Arc Browser JSON data, converts it to HTML, and writes the output to a specified file.")
     parser.add_argument('-o', '--output', type=Path, required=False, help='Specify the output file path')
 
