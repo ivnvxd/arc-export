@@ -1,19 +1,39 @@
+import argparse
 import datetime
 import json
 import os
 from pathlib import Path
 
+SILENT = False
+
 
 def main() -> None:
+    global SILENT
+    parser = argparse.ArgumentParser(description="Reads Arc Browser JSON data, converts it to HTML, and writes the output to a specified file.")
+    parser.add_argument('-s', '--silent', action='store_true', help='Silence output')
+    parser.add_argument('-o', '--output', type=Path, required=False, help='Specify the output file path')
+
+    args = parser.parse_args()
+    SILENT = args.silent
+    args.output if args.output else None
+
     data: dict = read_json()
     html: str = convert_json_to_html(data)
-    write_html(html)
+    write_html(html, args.output)
 
-    print("Done!")
+    log("Done!\n")
+
+
+def log(message: str, bold: bool = False) -> None:
+    if not SILENT:
+        if bold:
+            message = f"\033[1m{message}\033[0m"
+        
+        print(message)
 
 
 def read_json() -> dict:
-    print("Reading JSON...")
+    log("Reading JSON...")
 
     filename: Path = Path("StorableSidebar.json")
     if os.name == "nt":
@@ -41,16 +61,16 @@ def read_json() -> dict:
 
     if filename.exists():
         with filename.open("r", encoding="utf-8") as f:
-            print(f"> Found {filename} in current directory.")
+            log(f"> Found {filename} in current directory.", bold=True)
             data = json.load(f)
 
     elif library_path.exists():
         with library_path.open("r", encoding="utf-8") as f:
-            print(f"> Found {filename} in Library directory.")
+            log(f"> Found {filename} in Library directory.", bold=True)
             data = json.load(f)
 
     else:
-        print(
+        log(
             '> File not found. Look for the "StorableSidebar.json" '
             'file within the "~/Library/Application Support/Arc/" folder.'
         )
@@ -73,7 +93,7 @@ def convert_json_to_html(json_data: dict) -> str:
 
 
 def get_spaces(spaces: list) -> dict:
-    print("Getting spaces...")
+    log("Getting spaces...")
 
     spaces_names: dict = {"pinned": {}, "unpinned": {}}
     spaces_count: int = 0
@@ -107,13 +127,13 @@ def get_spaces(spaces: list) -> dict:
 
             spaces_count += 1
 
-    print(f"> Found {spaces_count} spaces.")
+    log(f"> Found {spaces_count} spaces.", bold=True)
 
     return spaces_names
 
 
 def convert_to_bookmarks(spaces: dict, items: list) -> dict:
-    print("Converting to bookmarks...")
+    log("Converting to bookmarks...")
 
     bookmarks: dict = {"bookmarks": []}
     bookmarks_count: int = 0
@@ -151,13 +171,13 @@ def convert_to_bookmarks(spaces: dict, items: list) -> dict:
         }
         bookmarks["bookmarks"].append(space_folder)
 
-    print(f"> Found {bookmarks_count} bookmarks.")
+    log(f"> Found {bookmarks_count} bookmarks.", bold=True)
 
     return bookmarks
 
 
 def convert_bookmarks_to_html(bookmarks: dict) -> str:
-    print("Converting bookmarks to HTML...")
+    log("Converting bookmarks to HTML...")
 
     html_str: str = """<!DOCTYPE NETSCAPE-Bookmark-file-1>
 <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
@@ -180,21 +200,24 @@ def convert_bookmarks_to_html(bookmarks: dict) -> str:
     html_str = traverse_dict(bookmarks["bookmarks"], html_str, 1)
     html_str += "\n</DL><p>"
 
-    print("> HTML converted.")
+    log("> HTML converted.", bold=True)
 
     return html_str
 
 
-def write_html(html_content: str) -> None:
-    print("Writing HTML...")
+def write_html(html_content: str, output: Path = None) -> None:
+    log("Writing HTML...")
 
-    current_date: str = datetime.datetime.now().strftime("%Y_%m_%d")
-    output_file: Path = Path("arc_bookmarks_" + current_date).with_suffix(".html")
+    if output is not None:
+        output_file: Path = output
+    else:
+        current_date: str = datetime.datetime.now().strftime("%Y_%m_%d")
+        output_file: Path = Path("arc_bookmarks_" + current_date).with_suffix(".html")
 
     with output_file.open("w", encoding="utf-8") as f:
         f.write(html_content)
 
-    print(f"> HTML written to {output_file}.")
+    log(f"> HTML written to {output_file}.", bold=True)
 
 
 if __name__ == "__main__":
