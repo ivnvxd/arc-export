@@ -1,39 +1,66 @@
-import argparse
 import datetime
+import argparse
 import json
 import os
+import logging
 from pathlib import Path
 
-SILENT = False
+
+class CustomFormatter(logging.Formatter):
+    FORMATS = {
+        logging.DEBUG: "\033[0;90m%(asctime)s\033[0m \033[1;36mDEBG\033[0m %(message)s",
+        logging.INFO: "\033[0;90m%(asctime)s\033[0m \033[1;32mINFO\033[0m %(message)s",
+        logging.WARNING: "\033[0;90m%(asctime)s\033[0m \033[1;33mWARN\033[0m %(message)s",
+        logging.ERROR: "\033[0;90m%(asctime)s\033[0m \033[1;31mERRR\033[0m %(message)s",
+        logging.CRITICAL: "\033[0;90m%(asctime)s\033[0m \033[1;41mCRIT\033[0m %(message)s",
+    }
+
+    def format(self, record: any) -> str:
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt, datefmt="%H:%M")
+        return formatter.format(record)
 
 
 def main() -> None:
-    global SILENT
-    parser = argparse.ArgumentParser(description="Reads Arc Browser JSON data, converts it to HTML, and writes the output to a specified file.")
-    parser.add_argument('-s', '--silent', action='store_true', help='Silence output')
-    parser.add_argument('-o', '--output', type=Path, required=False, help='Specify the output file path')
+    parser = argparse.ArgumentParser(
+        description="Reads Arc Browser JSON data, converts it to HTML, and writes the output to a specified file."
+    )
+    parser.add_argument("-s", "--silent", action="store_true", help="Silence output")
+    parser.add_argument(
+        "-o", "--output", type=Path, required=False, help="Specify the output file path"
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="Increase verbosity level (e.g., -v, -vv, -vvv)",
+    )
 
     args = parser.parse_args()
-    SILENT = args.silent
-    args.output if args.output else None
+
+    if args.silent:
+        logging.disable(logging.CRITICAL)
+    else:
+        handler = logging.StreamHandler()
+        handler.setFormatter(CustomFormatter())
+        logging.basicConfig(level=logging.DEBUG, handlers=[handler])
+
+        if args.verbose == 0:
+            logging.getLogger().setLevel(logging.WARNING)
+        elif args.verbose == 1:
+            logging.getLogger().setLevel(logging.INFO)
+        elif args.verbose >= 2:
+            logging.getLogger().setLevel(logging.DEBUG)
 
     data: dict = read_json()
     html: str = convert_json_to_html(data)
     write_html(html, args.output)
-
-    log("Done!\n")
-
-
-def log(message: str, bold: bool = False) -> None:
-    if not SILENT:
-        if bold:
-            message = f"\033[1m{message}\033[0m"
-        
-        print(message)
+    logging.info("Done!")
 
 
 def read_json() -> dict:
-    log("Reading JSON...")
+    logging.info("Reading JSON...")
 
     filename: Path = Path("StorableSidebar.json")
     if os.name == "nt":
@@ -61,18 +88,18 @@ def read_json() -> dict:
 
     if filename.exists():
         with filename.open("r", encoding="utf-8") as f:
-            log(f"> Found {filename} in current directory.", bold=True)
+            logging.debug(f"Found {filename} in current directory.")
             data = json.load(f)
 
     elif library_path.exists():
         with library_path.open("r", encoding="utf-8") as f:
-            log(f"> Found {filename} in Library directory.", bold=True)
+            logging.debug(f"Found {filename} in Library directory.")
             data = json.load(f)
 
     else:
-        log(
+        logging.critical(
             '> File not found. Look for the "StorableSidebar.json" '
-            'file within the "~/Library/Application Support/Arc/" folder.'
+            '  file within the "~/Library/Application Support/Arc/" folder.'
         )
         raise FileNotFoundError
 
@@ -93,7 +120,7 @@ def convert_json_to_html(json_data: dict) -> str:
 
 
 def get_spaces(spaces: list) -> dict:
-    log("Getting spaces...")
+    logging.info("Getting spaces...")
 
     spaces_names: dict = {"pinned": {}, "unpinned": {}}
     spaces_count: int = 0
@@ -127,13 +154,13 @@ def get_spaces(spaces: list) -> dict:
 
             spaces_count += 1
 
-    log(f"> Found {spaces_count} spaces.", bold=True)
+    logging.debug(f"Found {spaces_count} spaces.")
 
     return spaces_names
 
 
 def convert_to_bookmarks(spaces: dict, items: list) -> dict:
-    log("Converting to bookmarks...")
+    logging.info("Converting to bookmarks...")
 
     bookmarks: dict = {"bookmarks": []}
     bookmarks_count: int = 0
@@ -171,13 +198,13 @@ def convert_to_bookmarks(spaces: dict, items: list) -> dict:
         }
         bookmarks["bookmarks"].append(space_folder)
 
-    log(f"> Found {bookmarks_count} bookmarks.", bold=True)
+    logging.debug(f"Found {bookmarks_count} bookmarks.")
 
     return bookmarks
 
 
 def convert_bookmarks_to_html(bookmarks: dict) -> str:
-    log("Converting bookmarks to HTML...")
+    logging.info("Converting bookmarks to HTML...")
 
     html_str: str = """<!DOCTYPE NETSCAPE-Bookmark-file-1>
 <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
@@ -200,13 +227,13 @@ def convert_bookmarks_to_html(bookmarks: dict) -> str:
     html_str = traverse_dict(bookmarks["bookmarks"], html_str, 1)
     html_str += "\n</DL><p>"
 
-    log("> HTML converted.", bold=True)
+    logging.debug("HTML converted.")
 
     return html_str
 
 
 def write_html(html_content: str, output: Path = None) -> None:
-    log("Writing HTML...")
+    logging.info("Writing HTML...")
 
     if output is not None:
         output_file: Path = output
@@ -217,7 +244,7 @@ def write_html(html_content: str, output: Path = None) -> None:
     with output_file.open("w", encoding="utf-8") as f:
         f.write(html_content)
 
-    log(f"> HTML written to {output_file}.", bold=True)
+    logging.debug(f"HTML written to {output_file}.")
 
 
 if __name__ == "__main__":
