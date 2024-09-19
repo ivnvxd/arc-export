@@ -5,6 +5,10 @@
 Thumbs.db
 $RECYCLE.BIN/
 
+# Bookmarks
+bookmarks/
+arc_bookmarks_*
+
 # VsCode
 .vscode
 
