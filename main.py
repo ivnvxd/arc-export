@@ -1,18 +1,43 @@
-import datetime
+#!/usr/bin/env python3
+
 import argparse
+import datetime
 import json
-import os
 import logging
+import os
+import subprocess
+from datetime import datetime
 from pathlib import Path
 
 
+class Colors:
+    RESET =     "\033[0m"
+    BOLD =      "\033[1m"
+    UNDERLINE = "\033[4m"
+
+    BLACK =   "\033[30m"
+    RED =     "\033[31m"
+    GREEN =   "\033[32m"
+    YELLOW =  "\033[33m"
+    BLUE =    "\033[34m"
+    MAGENTA = "\033[35m"
+    CYAN =    "\033[36m"
+    WHITE =   "\033[37m"
+    GREY =    "\033[90m"
+    
+    @staticmethod
+    def Background(color: str) -> str:
+        return color.replace('[3', '[4', 1)
+        
+
 class CustomFormatter(logging.Formatter):
+    time_format = f"{Colors.GREY}%(asctime)s{Colors.RESET}"
     FORMATS = {
-        logging.DEBUG: "\033[0;90m%(asctime)s\033[0m \033[1;36mDEBG\033[0m %(message)s",
-        logging.INFO: "\033[0;90m%(asctime)s\033[0m \033[1;32mINFO\033[0m %(message)s",
-        logging.WARNING: "\033[0;90m%(asctime)s\033[0m \033[1;33mWARN\033[0m %(message)s",
-        logging.ERROR: "\033[0;90m%(asctime)s\033[0m \033[1;31mERRR\033[0m %(message)s",
-        logging.CRITICAL: "\033[0;90m%(asctime)s\033[0m \033[1;41mCRIT\033[0m %(message)s",
+        logging.DEBUG: f"{time_format} {Colors.BOLD}{Colors.CYAN}DEBG{Colors.RESET} %(message)s",
+        logging.INFO: f"{time_format} {Colors.BOLD}{Colors.GREEN}INFO{Colors.RESET} %(message)s",
+        logging.WARNING: f"{time_format} {Colors.BOLD}{Colors.YELLOW}WARN{Colors.RESET} %(message)s",
+        logging.ERROR: f"{time_format} {Colors.BOLD}{Colors.RED}ERRR{Colors.RESET} %(message)s",
+        logging.CRITICAL: f"{time_format} {Colors.BOLD}{Colors.Background(Colors.RED)}CRIT{Colors.RESET} %(message)s"
     }
 
     def format(self, record: any) -> str:
@@ -36,27 +61,63 @@ def main() -> None:
         default=0,
         help="Increase verbosity level (e.g., -v, -vv, -vvv)",
     )
+    parser.add_argument(
+        "--version", action="store_true", help="Print the git version and exit"
+    )
 
     args = parser.parse_args()
 
     if args.silent:
         logging.disable(logging.CRITICAL)
     else:
-        handler = logging.StreamHandler()
-        handler.setFormatter(CustomFormatter())
-        logging.basicConfig(level=logging.DEBUG, handlers=[handler])
+        setup_logging(args.verbose)
 
-        if args.verbose == 0:
-            logging.getLogger().setLevel(logging.WARNING)
-        elif args.verbose == 1:
-            logging.getLogger().setLevel(logging.INFO)
-        elif args.verbose >= 2:
-            logging.getLogger().setLevel(logging.DEBUG)
+    if args.version:
+        commit_hash, commit_time = get_version()
+        if commit_hash is None or commit_time is None:
+            logging.critical("Could not fetch Git metadata.")
+            return
+        print(f"{Colors.BOLD}GIT TIME{Colors.RESET} | {Colors.GREEN}{commit_time.strftime("%Y-%m-%d")}{Colors.RESET} [{Colors.YELLOW}{int(commit_time.timestamp())}{Colors.RESET}]")
+        print(f"{Colors.BOLD}GIT HASH{Colors.RESET} | {Colors.MAGENTA}{commit_hash}{Colors.RESET}")
+        return
 
     data: dict = read_json()
     html: str = convert_json_to_html(data)
     write_html(html, args.output)
     logging.info("Done!")
+
+
+def setup_logging(level: int) -> None:
+    handler = logging.StreamHandler()
+    handler.setFormatter(CustomFormatter())
+    logging.basicConfig(level=logging.DEBUG, handlers=[handler])
+
+    if level == 0:
+        logging.getLogger().setLevel(logging.WARNING)
+    elif level == 1:
+        logging.getLogger().setLevel(logging.INFO)
+    elif level >= 2:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+
+def get_version() -> tuple[str, datetime]:
+    try:
+        commit_hash: str = (
+            subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
+            .decode("utf-8")
+            .strip()
+        )
+        commit_time_str: str = (
+            subprocess.check_output(["git", "log", "-1", "--format=%ct"])
+            .decode("utf-8")
+            .strip()
+        )
+        commit_time = datetime.fromtimestamp(int(commit_time_str))
+    except Exception:
+        commit_hash = None
+        commit_time = None
+
+    return commit_hash, commit_time
 
 
 def read_json() -> dict:
@@ -133,7 +194,7 @@ def get_spaces(spaces: list) -> dict:
             title: str = "Space " + str(n)
             n += 1
 
-        # Really the only way to tell if a space is pinned or not??
+        # TODO: Find a better way to determine if a space is pinned or not
         if isinstance(space, dict):
             containers: list = space["newContainerIDs"]
 
@@ -143,14 +204,6 @@ def get_spaces(spaces: list) -> dict:
                         spaces_names["pinned"][str(containers[i + 1])]: str = title
                     elif "unpinned" in containers[i]:
                         spaces_names["unpinned"][str(containers[i + 1])]: str = title
-
-            # containers: list = space["containerIDs"]
-
-            # for i in range(len(containers)):
-            #     if containers[i] == "pinned":
-            #         spaces_names["pinned"][str(containers[i + 1])]: str = title
-            #     elif containers[i] == "unpinned":
-            #         spaces_names["unpinned"][str(containers[i + 1])]: str = title
 
             spaces_count += 1
 
@@ -238,7 +291,7 @@ def write_html(html_content: str, output: Path = None) -> None:
     if output is not None:
         output_file: Path = output
     else:
-        current_date: str = datetime.datetime.now().strftime("%Y_%m_%d")
+        current_date: str = datetime.now().strftime("%Y_%m_%d")
         output_file: Path = Path("arc_bookmarks_" + current_date).with_suffix(".html")
 
     with output_file.open("w", encoding="utf-8") as f:
