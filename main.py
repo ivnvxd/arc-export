@@ -48,21 +48,21 @@ class CustomFormatter(logging.Formatter):
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Reads Arc Browser JSON data, converts it to HTML, and writes the output to a specified file."
+        description="reads Arc Browser JSON data, converts it to HTML, and writes the output to a specified file."
     )
-    parser.add_argument("-s", "--silent", action="store_true", help="Silence output")
+    parser.add_argument("-s", "--silent", action="store_true", help="silence output")
     parser.add_argument(
-        "-o", "--output", type=Path, required=False, help="Specify the output file path"
-    )
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        action="count",
-        default=0,
-        help="Increase verbosity level (e.g., -v, -vv, -vvv)",
+        "-o", "--output", type=Path, required=False, help="specify the output file path"
     )
     parser.add_argument(
-        "--version", action="store_true", help="Print the git version and exit"
+            "-v",
+            "--verbose",
+            action="store_true",
+            default=False,
+            help="enable verbose output",
+        )
+    parser.add_argument(
+        "--version", action="store_true", help="print the git short hash and commit time"
     )
 
     args = parser.parse_args()
@@ -87,17 +87,15 @@ def main() -> None:
     logging.info("Done!")
 
 
-def setup_logging(level: int) -> None:
+def setup_logging(is_verbose: bool) -> None:
     handler = logging.StreamHandler()
     handler.setFormatter(CustomFormatter())
     logging.basicConfig(level=logging.DEBUG, handlers=[handler])
 
-    if level == 0:
-        logging.getLogger().setLevel(logging.WARNING)
-    elif level == 1:
-        logging.getLogger().setLevel(logging.INFO)
-    elif level >= 2:
+    if is_verbose:
         logging.getLogger().setLevel(logging.DEBUG)
+    else:
+        logging.getLogger().setLevel(logging.INFO)
 
 
 def get_version() -> tuple[str, datetime]:
