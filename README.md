@@ -27,15 +27,39 @@ curl -o main.py https://raw.githubusercontent.com/ivnvxd/arc-export/main/main.py
 Run the `main.py` script from the command line:
 
 ```sh
-python3 main.py
+python3 main.py [-h] [-s] [-o OUTPUT] [-v] [--version]
 
 # or if there is an error:
-python main.py
+python main.py [-h] [-s] [-o OUTPUT] [-v] [--version]
 ```
 
 ### Troubleshooting
 
-If you encounter any problems, manually copy the `StorableSidebar.json` file from the `~/Library/Application Support/Arc/` directory to the project's directory and run the script again.
+If you encounter any problems, manually copy the `StorableSidebar.json` file from the `~/Library/Application Support/Arc/` directory to the project's direc`tory and run the script again.
+
+## Features
+The script supports various command-line options for enhanced functionality:
+
+- **Show help message and exit**
+  - `-h`, `--help`
+
+- **Silence output**
+  - `-s`, `--silent`
+
+- **Specify the output file path**
+  - `-o OUTPUT`, `--output OUTPUT`
+
+- **Enable verbose output**
+  - `-v`, `--verbose`
+
+- **Print the git short hash and commit time**
+  - `--version`
+
+Example usage:
+
+`python3 main.py -v -o my_bookmarks.html`
+
+![Example Usage](example.gif)
 
 ## How It Works
 
