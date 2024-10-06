@@ -80,7 +80,7 @@ def main() -> None:
             logging.critical("Could not fetch Git metadata.")
             return
         print(
-            f"{Colors.BOLD}GIT TIME{Colors.RESET} | {Colors.GREEN}{commit_time.strftime("%Y-%m-%d")}{Colors.RESET} [{Colors.YELLOW}{int(commit_time.timestamp())}{Colors.RESET}]"
+            f"{Colors.BOLD}GIT TIME{Colors.RESET} | {Colors.GREEN}{commit_time.strftime('%Y-%m-%d')}{Colors.RESET} [{Colors.YELLOW}{int(commit_time.timestamp())}{Colors.RESET}]"
         )
         print(
             f"{Colors.BOLD}GIT HASH{Colors.RESET} | {Colors.MAGENTA}{commit_hash}{Colors.RESET}"
