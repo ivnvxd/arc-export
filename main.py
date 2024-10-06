@@ -11,24 +11,24 @@ from pathlib import Path
 
 
 class Colors:
-    RESET =     "\033[0m"
-    BOLD =      "\033[1m"
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
     UNDERLINE = "\033[4m"
 
-    BLACK =   "\033[30m"
-    RED =     "\033[31m"
-    GREEN =   "\033[32m"
-    YELLOW =  "\033[33m"
-    BLUE =    "\033[34m"
+    BLACK = "\033[30m"
+    RED = "\033[31m"
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    BLUE = "\033[34m"
     MAGENTA = "\033[35m"
-    CYAN =    "\033[36m"
-    WHITE =   "\033[37m"
-    GREY =    "\033[90m"
-    
+    CYAN = "\033[36m"
+    WHITE = "\033[37m"
+    GREY = "\033[90m"
+
     @staticmethod
     def Background(color: str) -> str:
-        return color.replace('[3', '[4', 1)
-        
+        return color.replace("[3", "[4", 1)
+
 
 class CustomFormatter(logging.Formatter):
     time_format = f"{Colors.GREY}%(asctime)s{Colors.RESET}"
@@ -37,7 +37,7 @@ class CustomFormatter(logging.Formatter):
         logging.INFO: f"{time_format} {Colors.BOLD}{Colors.GREEN}INFO{Colors.RESET} %(message)s",
         logging.WARNING: f"{time_format} {Colors.BOLD}{Colors.YELLOW}WARN{Colors.RESET} %(message)s",
         logging.ERROR: f"{time_format} {Colors.BOLD}{Colors.RED}ERRR{Colors.RESET} %(message)s",
-        logging.CRITICAL: f"{time_format} {Colors.BOLD}{Colors.Background(Colors.RED)}CRIT{Colors.RESET} %(message)s"
+        logging.CRITICAL: f"{time_format} {Colors.BOLD}{Colors.Background(Colors.RED)}CRIT{Colors.RESET} %(message)s",
     }
 
     def format(self, record: any) -> str:
@@ -55,14 +55,16 @@ def main() -> None:
         "-o", "--output", type=Path, required=False, help="specify the output file path"
     )
     parser.add_argument(
-            "-v",
-            "--verbose",
-            action="store_true",
-            default=False,
-            help="enable verbose output",
-        )
+        "-v",
+        "--verbose",
+        action="store_true",
+        default=False,
+        help="enable verbose output",
+    )
     parser.add_argument(
-        "--version", action="store_true", help="print the git short hash and commit time"
+        "--version",
+        action="store_true",
+        help="print the git short hash and commit time",
     )
 
     args = parser.parse_args()
@@ -77,8 +79,12 @@ def main() -> None:
         if commit_hash is None or commit_time is None:
             logging.critical("Could not fetch Git metadata.")
             return
-        print(f"{Colors.BOLD}GIT TIME{Colors.RESET} | {Colors.GREEN}{commit_time.strftime("%Y-%m-%d")}{Colors.RESET} [{Colors.YELLOW}{int(commit_time.timestamp())}{Colors.RESET}]")
-        print(f"{Colors.BOLD}GIT HASH{Colors.RESET} | {Colors.MAGENTA}{commit_hash}{Colors.RESET}")
+        print(
+            f"{Colors.BOLD}GIT TIME{Colors.RESET} | {Colors.GREEN}{commit_time.strftime("%Y-%m-%d")}{Colors.RESET} [{Colors.YELLOW}{int(commit_time.timestamp())}{Colors.RESET}]"
+        )
+        print(
+            f"{Colors.BOLD}GIT HASH{Colors.RESET} | {Colors.MAGENTA}{commit_hash}{Colors.RESET}"
+        )
         return
 
     data: dict = read_json()
