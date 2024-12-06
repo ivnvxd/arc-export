@@ -61,7 +61,10 @@ def read_json() -> dict:
 
 def convert_json_to_html(json_data: dict) -> str:
     containers: list = json_data["sidebar"]["containers"]
-    target: int = next(i + 1 for i, c in enumerate(containers) if "global" in c)
+    try:
+        target: int = next(i + 1 for i, c in enumerate(containers) if "global" in c)
+    except StopIteration:
+        raise ValueError("No container with 'global' found in the sidebar data")
 
     spaces: dict = get_spaces(json_data["sidebar"]["containers"][target]["spaces"])
     items: list = json_data["sidebar"]["containers"][target]["items"]
