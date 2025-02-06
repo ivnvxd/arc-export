@@ -35,7 +35,7 @@ python main.py [-h] [-s] [-o OUTPUT] [-v] [--version]
 
 ### Troubleshooting
 
-If you encounter any problems, manually copy the `StorableSidebar.json` file from the `~/Library/Application Support/Arc/` directory to the project's direc`tory and run the script again.
+If you encounter any problems, manually copy the `StorableSidebar.json` file from the `~/Library/Application Support/Arc/` directory to the project's directory and run the script again.
 
 ## Features
 The script supports various command-line options for enhanced functionality:
